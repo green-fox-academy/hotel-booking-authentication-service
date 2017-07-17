@@ -18,5 +18,4 @@ public class RabbitService {
     String received = consume.getReceivedMessage();
     return (received.equals("monitoring message"));
   }
-  
 }
