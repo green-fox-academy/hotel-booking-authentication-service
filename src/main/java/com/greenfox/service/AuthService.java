@@ -14,16 +14,18 @@ public class AuthService {
   @Autowired
   AccountRepository accountRepository;
 
-  public void authenticate(String email, String password) throws Exception {
-    Account account;
+  public Account authenticate(String email, String password) throws Exception {
     if (!checkAccount(email)) {
       throw new NoSuchAccountException("Invalid email");
-    } else {
-      account = accountRepository.findAccountByEmail(email);
     }
+
+    Account account = accountRepository.findAccountByEmail(email);
+
     if (!checkPassword(password, account.getPassword())) {
       throw new InvalidPasswordException("Invalid password");
-    };
+    }
+    return account;
+
   }
 
   public boolean checkAccount(String email) {
