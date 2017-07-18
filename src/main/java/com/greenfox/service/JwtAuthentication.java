@@ -1,11 +1,13 @@
-package com.greenfox.model;
+package com.greenfox.service;
 
 import com.greenfox.exception.JwtTokenMalformedException;
 import com.greenfox.exception.JwtTokenMissingException;
-import com.greenfox.service.JwtUnit;
+import com.greenfox.model.Account;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class JwtAuthentication {
 
   @Autowired

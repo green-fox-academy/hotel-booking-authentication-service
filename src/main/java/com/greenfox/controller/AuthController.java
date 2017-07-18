@@ -2,7 +2,7 @@ package com.greenfox.controller;
 
 import com.greenfox.exception.InvalidPasswordException;
 import com.greenfox.exception.NoSuchAccountException;
-import com.greenfox.model.JwtAuthentication;
+import com.greenfox.service.JwtAuthentication;
 import com.greenfox.service.AuthService;
 import com.greenfox.service.GsonService;
 import com.greenfox.service.JwtUnit;
@@ -40,6 +40,7 @@ public class AuthController {
     this.accountRepository = accountRepository;
     this.gsonService = gsonService;
     this.authService = authService;
+    this.jwtAuthentication = jwtAuthentication;
   }
 
   @RequestMapping("/api/*")
