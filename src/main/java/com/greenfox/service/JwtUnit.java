@@ -64,7 +64,6 @@ public class JwtUnit {
           .setSigningKey(secret.getBytes("UTF-8"))
           .parseClaimsJws(token)
           .getBody();
-
       Account a = new Account();
       a.setEmail(body.getSubject());
 //      a.setId(Long.parseLong((String) body.get("userId")));
@@ -73,6 +72,7 @@ public class JwtUnit {
       return a;
 
     } catch (JwtException | ClassCastException e) {
+      System.out.println("Invalid token parse");
       return null;
     }
   }

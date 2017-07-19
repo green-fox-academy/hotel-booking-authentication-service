@@ -15,7 +15,6 @@ public class JwtAuthentication {
 
   public Account attemptAuthentication(HttpServletRequest request) throws Exception {
     String header = request.getHeader("Authorization");
-
     if (header == null || !header.startsWith("Bearer ")) {
       throw new JwtTokenMissingException("No JWT token found in request headers");
     }
@@ -34,5 +33,4 @@ public class JwtAuthentication {
 
     return parsedUser;
   }
-
 }

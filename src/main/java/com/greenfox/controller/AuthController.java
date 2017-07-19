@@ -2,6 +2,7 @@ package com.greenfox.controller;
 
 import com.greenfox.exception.InvalidPasswordException;
 import com.greenfox.exception.NoSuchAccountException;
+import com.greenfox.model.Heartbeat;
 import com.greenfox.service.JwtAuthentication;
 import com.greenfox.service.AuthService;
 import com.greenfox.service.GsonService;
@@ -11,6 +12,7 @@ import com.greenfox.repository.AccountRepository;
 import javax.servlet.http.HttpServletRequest;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +24,11 @@ import org.springframework.web.client.RestTemplate;
 
 @RestController
 public class AuthController {
+
+
+  @Value("resizeServiceDomain")
+  private String resizeServiceDomain;
+
 
   private AccountRepository accountRepository;
   private JwtUnit jwtUnit;
@@ -46,9 +53,14 @@ public class AuthController {
   @RequestMapping("/api/*")
   public ResponseEntity validate(HttpServletRequest request) {
     try {
-      jwtAuthentication.attemptAuthentication(request);
-      return new RestTemplate().postForEntity("hotel-booking-user-service.herokuapp.com/" + request.getRequestURI(), request, ResponseEntity.class);
+//      jwtAuthentication.attemptAuthentication(request);
+      System.out.println("accepted");
+      RestTemplate restTemplate = new RestTemplate();
+      ResponseEntity response = restTemplate.getForEntity("http://10.27.99.74:8080/heartbeat", Heartbeat.class);
+      System.out.println(response);
+      return response;
     } catch (Exception e) {
+      System.out.println(e.getMessage());
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
   }

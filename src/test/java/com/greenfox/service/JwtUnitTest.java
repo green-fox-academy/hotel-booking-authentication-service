@@ -27,7 +27,7 @@ public class JwtUnitTest {
 
   @Test
   public void parseToken_Verified() throws Exception {
-    String validToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkb21iby5wZXRlckBnbWFpbC5jb20iLCJ1c2VySWQiOiIxIiwiYWRtaW5Sb2xlIjp0cnVlfQ.mKvGkiVCtGtJC3js3Zx5Rd5bwkURCV89p8h0IYZPsaUKnKyQD9qLuC7uciFVhBw373MklXYD_El66JBnJ3L5Pg";
+    String validToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkb21iby5wZXRlckBnbWFpbC5jb20iLCJhZG1pblJvbGUiOnRydWV9.LuQX23fxwU0nEj4viCFPsuBr9KecC4xqlYY8eiRZRJl6-ac5-F22ihqyVrcVd2_g82LjxWxDJ1N-JrVvfLB2EQ";
     Account a = jwtUnit.parseToken(validToken);
     assertTrue(a.isAdmin());
     assertEquals("dombo.peter@gmail.com", a.getEmail());
