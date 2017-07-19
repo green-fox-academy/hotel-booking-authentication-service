@@ -5,15 +5,14 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import java.util.Date;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 public class JwtUnit {
 
-  @Value("${secret}")
-  private String secret;
+  private String secret = System.getenv("secret");
 
 //  public String createJwt(String issuer, String subject, long ttlMillis) throws Exception {
 //

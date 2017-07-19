@@ -2,33 +2,30 @@ package com.greenfox.controller;
 
 import com.greenfox.exception.InvalidPasswordException;
 import com.greenfox.exception.NoSuchAccountException;
+import com.greenfox.model.Account;
 import com.greenfox.model.Heartbeat;
-import com.greenfox.service.JwtAuthentication;
+import com.greenfox.repository.AccountRepository;
 import com.greenfox.service.AuthService;
 import com.greenfox.service.GsonService;
+import com.greenfox.service.JwtAuthentication;
 import com.greenfox.service.JwtUnit;
-import com.greenfox.model.Account;
-import com.greenfox.repository.AccountRepository;
-import javax.servlet.http.HttpServletRequest;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 @RestController
 public class AuthController {
 
-
-  @Value("resizeServiceDomain")
-  private String resizeServiceDomain;
-
+  private String userRepoServiceDomain = System.getenv("userRepoServiceDomain");
 
   private AccountRepository accountRepository;
   private JwtUnit jwtUnit;
@@ -50,13 +47,14 @@ public class AuthController {
     this.jwtAuthentication = jwtAuthentication;
   }
 
-  @RequestMapping("/api/*")
-  public ResponseEntity validate(HttpServletRequest request) {
+  @GetMapping("/heartbeat")
+  public ResponseEntity heartbeat(HttpServletRequest request) {
     try {
-//      jwtAuthentication.attemptAuthentication(request);
+      jwtAuthentication.attemptAuthentication(request);
       System.out.println("accepted");
+      System.out.println("URI: " + request.getRequestURI());
       RestTemplate restTemplate = new RestTemplate();
-      ResponseEntity response = restTemplate.getForEntity("http://10.27.99.74:8080/heartbeat", Heartbeat.class);
+      ResponseEntity response = restTemplate.getForEntity("http://" + userRepoServiceDomain + request.getRequestURI(), Heartbeat.class);
       System.out.println(response);
       return response;
     } catch (Exception e) {
@@ -65,6 +63,23 @@ public class AuthController {
     }
   }
 
+
+  @GetMapping("/api/users")
+  public ResponseEntity validate(HttpServletRequest request) {
+    try {
+      jwtAuthentication.attemptAuthentication(request);
+      System.out.println("accepted");
+      System.out.println("URI: " + request.getRequestURI());
+      RestTemplate restTemplate = new RestTemplate();
+      ResponseEntity response = restTemplate.getForEntity("http://" + userRepoServiceDomain + request.getRequestURI(), Object.class);
+      System.out.println(response);
+      return response;
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+  }
+  
   @PostMapping(value = "/register", produces = "application/json")
   public ResponseEntity saveAccount(@RequestBody String json) throws Exception {
     credentials = getCredentials(json);

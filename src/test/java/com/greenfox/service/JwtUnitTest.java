@@ -1,10 +1,10 @@
 package com.greenfox.service;
 
-import static org.junit.Assert.*;
-
 import com.greenfox.model.Account;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class JwtUnitTest {
 
@@ -13,6 +13,7 @@ public class JwtUnitTest {
 
   @Before
   public void setup() {
+
     a.setAdmin(true);
     a.setEmail("dombo.peter@gmail.com");
   }
@@ -20,6 +21,7 @@ public class JwtUnitTest {
   @Test
   public void parseGeneratedToken() throws Exception {
   String token = jwtUnit.generateToken(a);
+    System.out.println(token);
   Account a = jwtUnit.parseToken(token);
   assertTrue(a.isAdmin());
   assertEquals("dombo.peter@gmail.com", a.getEmail());
