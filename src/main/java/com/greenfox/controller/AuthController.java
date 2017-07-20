@@ -122,6 +122,9 @@ public class AuthController {
       Account account = new Account();
       account.setPassword(hashPassword(credentials.getPassword()));
       account.setEmail(credentials.getEmail());
+      accountRepository.save(account);
+      account = accountRepository.findAccountByEmail(credentials.getEmail());
+      System.out.println(account.getId());
       account.setToken(createJwt(account));
       accountRepository.save(account);
       response = createResponse(credentials.getEmail());
@@ -136,7 +139,6 @@ public class AuthController {
 
     try {
       Account account = authenticateUser(credentials.getEmail(), credentials.getPassword());
-      System.out.println(account.getToken());
       account.setToken(createJwt(account));
       accountRepository.save(account);
       response = createResponse(credentials.getEmail());
