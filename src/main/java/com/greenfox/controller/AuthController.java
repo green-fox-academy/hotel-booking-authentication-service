@@ -1,7 +1,5 @@
 package com.greenfox.controller;
 
-import com.greenfox.exception.InvalidPasswordException;
-import com.greenfox.exception.NoSuchAccountException;
 import com.greenfox.model.Account;
 import com.greenfox.model.Heartbeat;
 import com.greenfox.model.RequestData;
@@ -10,7 +8,6 @@ import com.greenfox.service.AuthService;
 import com.greenfox.service.GsonService;
 import com.greenfox.service.JwtAuthentication;
 import com.greenfox.service.JwtUnit;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,64 +111,30 @@ public class AuthController {
   }
   
   @PostMapping(value = "/register", produces = "application/json")
-  public ResponseEntity saveAccount(@RequestBody String json) throws Exception {
-    credentials = getCredentials(json);
-    if (isRegisteredUser()) {
-      return new ResponseEntity<>(HttpStatus.CONFLICT);
-    } else {
-      Account account = new Account();
-      account.setPassword(hashPassword(credentials.getPassword()));
-      account.setEmail(credentials.getEmail());
-      accountRepository.save(account);
-      account = accountRepository.findAccountByEmail(credentials.getEmail());
-      System.out.println(account.getId());
-      account.setToken(createJwt(account));
-      accountRepository.save(account);
-      response = createResponse(credentials.getEmail());
-      return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-  }
-
-  @PostMapping(value = "/login", produces = "application/json")
-  public ResponseEntity authenticateAccount(@RequestBody String json) throws Exception {
-
-    credentials = getCredentials(json);
-
+  public ResponseEntity saveAccount(HttpServletRequest request, @RequestBody RequestData requestData) throws Exception {
     try {
-      Account account = authenticateUser(credentials.getEmail(), credentials.getPassword());
-      account.setToken(createJwt(account));
-      accountRepository.save(account);
-      response = createResponse(credentials.getEmail());
-      return new ResponseEntity<>(response, HttpStatus.OK);
-    } catch (NoSuchAccountException | InvalidPasswordException e) {
+      jwtAuthentication.attemptAuthentication(request);
+      RestTemplate restTemplate = new RestTemplate();
+      restTemplate.put(
+          "http://" + userRepoServiceDomain + request.getRequestURI(), requestData);
+      return new ResponseEntity<>("{}",HttpStatus.OK);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
   }
 
-  public Account getCredentials(String json) {
-    return gsonService.parseCredentials(json);
-  }
-
-  public boolean isRegisteredUser() {
-    return authService.checkAccount(credentials.getEmail());
-  }
-
-  public String createJwt(Account a) throws Exception {
-    return jwtUnit.generateToken(a);
-  }
-
-  public String hashPassword(String password) {
-    return BCrypt
-        .hashpw(password, BCrypt.gensalt((Integer.parseInt(System.getenv("LOG_ROUNDS")))));
-  }
-
-  public String createResponse(String email) {
-    responseAccount = accountRepository.findAccountByEmail(email);
-    return gsonService.createAccountJson(responseAccount.getId(), responseAccount.getEmail(),
-        responseAccount.isAdmin(), responseAccount.getToken());
-  }
-
-  public Account authenticateUser(String email, String password) throws Exception {
-    return authService.authenticate(email, password);
+  @PostMapping(value = "/login", produces = "application/json")
+  public ResponseEntity authenticateAccount(HttpServletRequest request, @RequestBody RequestData requestData) throws Exception {
+    try {
+      jwtAuthentication.attemptAuthentication(request);
+      RestTemplate restTemplate = new RestTemplate();
+      restTemplate.put(
+          "http://" + userRepoServiceDomain + request.getRequestURI(), requestData);
+      return new ResponseEntity<>("{}",HttpStatus.OK);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
   }
 }

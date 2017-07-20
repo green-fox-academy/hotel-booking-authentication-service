@@ -21,7 +21,7 @@ public class JwtUnitTest {
   @Test
   public void parseGeneratedToken() throws Exception {
   String token = jwtUnit.generateToken(a);
-    System.out.println(token);
+  System.out.println(token);
   Account a = jwtUnit.parseToken(token);
   assertTrue(a.isAdmin());
   assertEquals("dombo.peter@gmail.com", a.getEmail());
