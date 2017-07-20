@@ -14,12 +14,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,7 +37,7 @@ public class AuthController {
 
   @Autowired
   public AuthController(AccountRepository accountRepository, JwtUnit jwtUnit,
-      GsonService gsonService, AuthService authService, JwtAuthentication jwtAuthentication) {
+                        GsonService gsonService, AuthService authService, JwtAuthentication jwtAuthentication) {
     this.jwtUnit = jwtUnit;
     this.accountRepository = accountRepository;
     this.gsonService = gsonService;
@@ -87,12 +82,20 @@ public class AuthController {
   }
 
   @DeleteMapping("/api/users/{userId}")
-  public ResponseEntity deleteUser(HttpServletRequest request) {
+  public ResponseEntity deleteUser(@PathVariable int userId, HttpServletRequest request) {
     try {
       jwtAuthentication.attemptAuthentication(request);
-      RestTemplate restTemplate = new RestTemplate();
-      restTemplate.delete("http://" + userRepoServiceDomain + request.getRequestURI());
-      return new ResponseEntity<>("{}",HttpStatus.OK);
+      String authenticationHeaderContent = request.getHeader("Authorization").substring(7);
+      System.out.println("Auth header: " + authenticationHeaderContent);
+      Account currentAccount = jwtUnit.parseToken(authenticationHeaderContent);
+      System.out.println("Account done");
+      if (!currentAccount.isAdmin() && currentAccount.getId() != userId) {
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+      } else {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete("http://" + userRepoServiceDomain + request.getRequestURI());
+        return new ResponseEntity<>("{}", HttpStatus.OK);
+      }
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -105,14 +108,14 @@ public class AuthController {
       jwtAuthentication.attemptAuthentication(request);
       RestTemplate restTemplate = new RestTemplate();
       restTemplate.put(
-          "http://" + userRepoServiceDomain + request.getRequestURI(), requestData);
-      return new ResponseEntity<>("{}",HttpStatus.OK);
+              "http://" + userRepoServiceDomain + request.getRequestURI(), requestData);
+      return new ResponseEntity<>("{}", HttpStatus.OK);
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
   }
-  
+
   @PostMapping(value = "/register", produces = "application/json")
   public ResponseEntity saveAccount(@RequestBody String json) throws Exception {
     credentials = getCredentials(json);
@@ -160,13 +163,13 @@ public class AuthController {
 
   public String hashPassword(String password) {
     return BCrypt
-        .hashpw(password, BCrypt.gensalt((Integer.parseInt(System.getenv("LOG_ROUNDS")))));
+            .hashpw(password, BCrypt.gensalt((Integer.parseInt(System.getenv("LOG_ROUNDS")))));
   }
 
   public String createResponse(String email) {
     responseAccount = accountRepository.findAccountByEmail(email);
     return gsonService.createAccountJson(responseAccount.getId(), responseAccount.getEmail(),
-        responseAccount.isAdmin(), responseAccount.getToken());
+            responseAccount.isAdmin(), responseAccount.getToken());
   }
 
   public Account authenticateUser(String email, String password) throws Exception {
